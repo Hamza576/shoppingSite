@@ -1,0 +1,108 @@
+{% load static %}
+<header class="section-header">
+    <nav class="navbar navbar-expand-sm navbar-light border-bottom p-md-0">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop4"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarTop4">
+                <ul class="navbar-nav mr-auto">
+                    <li class="dropdown nav-item">
+                        <a href="#" class="nav-link"> English </a>
+                    </li>
+                    <li class="dropdown nav-item">
+                        <a href="#" class="nav-link"> USD </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li><a href="#" class="nav-link"> <i class="fa fa-envelope"></i> Email </a></li>
+                    <li><a href="#" class="nav-link"> <i class="fa fa-phone"></i> Call us </a></li>
+                </ul> <!-- list-inline //  -->
+            </div> <!-- navbar-collapse .// -->
+        </div> <!-- container //  -->
+    </nav>
+
+    <section class="border-bottom header-main">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-6 col-lg-2 col-md-3">
+                    <a href="/" class="brand-wrap">
+                        <h1>EShop</h1>
+                    </a> <!-- brand-wrap.// -->
+                </div>
+                <div class="col-6 col-lg col-md col-sm flex-grow-0">
+                    <div class="d-inline-block dropdown float-right category-wrap">
+                        <button type="button" id="main-category-text" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                            All Products
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{% url 'store' %}">All Products</a>
+                            {% for category in category_links %}
+                                <a class="dropdown-item" id="category-link" href="{% url 'products_by_category' category.slug %}">{{category}}</a>
+                            {% endfor %}
+                        </div>
+                    </div> <!-- category-wrap.// -->
+                </div> <!-- col.// -->
+                <a href="{% url 'store' %}" class="btn btn-outline-primary">Store</a>
+                <div class="col col-lg col-md-6 col-sm-12">
+                    <form action="{% url 'search' %}" method="get" class="search">
+                        <div class="input-group w-100">
+                            <input type="text" name="keyword" value="{{keyword}}" class="form-control" style="width:60%;" placeholder="Search">
+
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form> <!-- search-wrap .end// -->
+                </div> <!-- col.// -->
+                <div class="col-8 col-lg-3 col-sm-6 order-2 order-lg-3">
+                    <div class="d-flex justify-content-end mb-3 mb-lg-0">
+                        <div class="widget-header">
+                            {% if request.user.is_authenticated %}
+                                <small class="text-muted title">Welcome {{request.user.full_name}}</small>
+                            {% else %}
+                                <small class="text-muted title">Welcome guest!</small>
+                            {% endif %}
+                            <div>
+                                {% if not request.user.is_authenticated %}
+                                    <a href="{% url 'login' %}">Sign in</a> <span class="dark-transp"> | </span>
+                                    <a href="{% url 'registration' %}"> Register</a>
+                                {% else %}
+                                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'show_cart' %}" class="ml-3 pl-3 widget-header">
+                                <div class="border rounded-circle icon icon-sm"><i class="fa fa-shopping-cart"></i>
+                                </div>
+                                <span class="badge badge-danger badge-pill notify">{{total_cart_items}}</span>
+                            </a>
+                        {% endif %}
+                    </div> <!-- widgets-wrap.// -->
+                </div> <!-- col.// -->
+            </div> <!-- row.// -->
+        </div> <!-- container.// -->
+    </section> <!-- header-main .// -->
+
+
+</header> <!-- section-header.// -->
+
+<script>
+    $(document).ready(function () {
+        // Get current path (e.g., "/category/jeans/")
+        let currentPath = window.location.pathname;
+
+        // If URL matches a category, update button text
+        $('.dropdown-item').each(function() {
+            let categoryUrl = $(this).attr('href');
+            let categoryName = $(this).text();
+            if (currentPath.includes(categoryUrl)) {
+                $('#main-category-text').text(categoryName);
+            }
+        })        
+    });
+</script>

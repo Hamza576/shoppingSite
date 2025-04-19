@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Payment {% endblock title %}
+
+{% block content %}
+
+<section class="section-content padding-y bg">
+    <div class="container">
+
+        <!-- ============================ COMPONENT 1 ================================= -->
+
+        <div class="row">
+            <aside class="col-lg-8">
+                <!-- first card -->
+                <div class="card mb-2">
+                    <div class="card-header">
+                        Billing Address
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Name: {{order.full_name}}</p>
+                        <p class="card-text">Phone: {{order.phone}}</p>
+                        <p class="card-text">Email: {{order.email}}</p>
+                        <p class="card-text">Address: {{order.address}}</p>
+                        <p class="card-text">{{order.city}}, {{order.state}}, {{order.country}}</p>
+                        {% if order.order_note %}
+                        <p class="card-text"><b>Order Note: </b>{{order.order_note}}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- second card -->
+                <div class="card mb-2">
+                    <div class="card-header">
+                        Payment Method
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">PayPal</p>
+                    </div>
+                </div>
+                <!-- third card -->
+                <div class="card mb-2">
+                    <div class="card-header">
+                        Products
+                    </div>
+                    <div class="card-body">
+                        <table id="cart-table" class="table table-borderless table-shopping-cart">
+                            <thead class="text-muted">
+                                <tr class="small text-uppercase">
+                                    <th scope="col">Product</th>
+                                    <th scope="col" width="120">Quantity</th>
+                                    <th scope="col" width="120">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cart_item in cart_items %}
+                                <tr>
+                                    <td>
+                                        <figure class="itemside align-items-center">
+                                            <div class="aside"><img src="{{cart_item.product.image.url}}"
+                                                    class="img-sm"></div>
+                                            <figcaption class="info">
+                                                <a href="#"
+                                                    class="title text-dark">{{cart_item.product.product_name}}</a>
+                                                {% for variation in cart_item.variations.all %}
+                                                <p class="text-muted small">{{variation.variation_category}}:
+                                                    {{variation.variation_value}} <br> </p>
+                                                {% endfor %}
+                                            </figcaption>
+                                        </figure>
+                                    </td>
+                                    <td>
+                                        <!-- col.// -->
+                                        <div class="col">
+                                            <div class="input-group input-spinner">
+                                                <span
+                                                    class="quantity w-25 d-flex justify-content-center align-items-center">{{cart_item.quantity}}</span>
+                                            </div> <!-- input-group.// -->
+                                        </div> <!-- col.// -->
+                                    </td>
+                                    <td>
+                                        <div class="price-wrap">
+                                            <var style="display: flex;">Rs.&nbsp;<span
+                                                    class="price">{{cart_item.total_price}}</span></var>
+                                            <small class="text-muted"> Rs.{{cart_item.product.price}} each </small>
+                                        </div> <!-- price-wrap .// -->
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </aside>
+            <aside class="col-lg-4">
+
+                <div class="card">
+                    <div class="card-body">
+                        <dl class="dlist-align">
+                            <dt>Total price:</dt>
+                            <dd class="text-right" style="display: flex;">Rs. <span
+                                    id="total-amount">{{total_amount}}</span></dd>
+                        </dl>
+                        <dl class="dlist-align">
+                            <dt>Shipping Amount:</dt>
+                            <dd class="text-right">Rs. {{shipping_amount}}</dd>
+                        </dl>
+                        <dl class="dlist-align">
+                            <dt>Grand Total:</dt>
+                            <dd class="text-right text-dark b" style="display: flex;">Rs. <strong
+                                    id="grand-total">{{grand_total}}</strong></dd>
+                        </dl>
+                        <hr>
+                        <p class="text-center mb-3">
+                            <img src="{% static './images/misc/payments.png' %}" height="26">
+                        </p>
+                        <!-- <a href="{% url 'checkout' %}" class="btn btn-primary btn-block"> Make Payment </a> -->
+                        <div id="paypal-button-container">
+                            <!-- Paypal buttons will load -->
+                        </div>
+                    </div> <!-- card-body.// -->
+                </div> <!-- card.// -->
+
+            </aside> <!-- col.// -->
+
+        </div> <!-- row.// -->
+        <!-- ============================ COMPONENT 1 END .// ================================= -->
+
+    </div> <!-- container .//  -->
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+
+<script>
+    let total_amount = "{{grand_total}}";
+    let url = "{% url 'payment' %}";
+    let orderNumber = "{{order.order_number}}";
+    let paymentMethod = 'Paypal';
+    let redirect_url = "{% url 'order_complete' %}";
+
+    // generate csrf token
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    paypal.Buttons({
+        createOrder: function (data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: total_amount  // Total amount
+                    }
+                }]
+            });
+        },
+        onApprove: function (data, actions) {
+            return actions.order.capture().then(function (details) {
+                sendData();
+                function sendData() {
+                    fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ 
+                            transactionId: details.id,
+                            status: details.status,
+                            paymentMethod,
+                            orderNumber,
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        window.location.href = `${redirect_url}?order_number=${data.order_number}&payment_id=${data.transaction_id}`
+                    })
+                }
+            });
+        }
+    }).render('#paypal-button-container');
+</script>
+
+{% endblock content %}
