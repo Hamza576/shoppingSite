@@ -152,3 +152,7 @@ EMAIL_HOST_PASSWORD = config('MAILTRAP_EMAIL_HOST_PASSWORD')
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
+
+
+# hello, i am adding a comment to test git ignore file
+#hello, i am here
