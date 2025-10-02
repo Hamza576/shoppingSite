@@ -9,15 +9,14 @@
 <section class="section-pagetop bg">
 	<div class="container">
 		{% if 'search' in request.path %}
-			<h2 class="title-page">Search Result</h2>
+		<h2 class="title-page">Search Result</h2>
 		{% else %}
-			<h2 class="title-page">Our Store</h2>
+		<h2 class="title-page">Our Store</h2>
 		{% endif %}
 	</div>
 </section>
 <!-- ========================= SECTION INTRO END// ========================= -->
 
-<!-- ========================= SECTION CONTENT ========================= -->
 <section class="section-content padding-y">
 	<div class="container">
 
@@ -25,6 +24,7 @@
 			<aside class="col-md-3">
 
 				<div class="card">
+					<!-- Categories -->
 					<article class="filter-group">
 						<header class="card-header">
 							<a href="#" data-toggle="collapse" data-target="#collapse_1" aria-expanded="true" class="">
@@ -34,18 +34,32 @@
 						</header>
 						<div class="filter-content collapse show" id="collapse_1">
 							<div class="card-body">
-
-								<ul class="list-menu">
-									<li {% if '/store/' == request.path %} class="list-group-item" {% endif %}><a href="{% url 'store' %}">All Products</a></li>
+								<form action="" method="get">
 									{% for category in category_links %}
-										<li {% if category.slug in request.path %} class="list-group-item" {% endif %}><a id="category-link" href="{% url 'products_by_category' category.slug %}">{{category}}</a></li>
+										<div class="form-check">
+											<input type="checkbox" class="form-check-input" name="category"
+												value="{{category.slug}}" id="cat-{{category.slug}}"
+												{% if category.slug in selected_categories %} checked {% endif %}>
+											<label for="cat-{{category.slug}}" class="form-check-label">
+												{{category.category_name}}
+											</label>
+										</div>
 									{% endfor %}
-								</ul>
 
-							</div> <!-- card-body.// -->
+									<!-- Preserve other filters -->
+									{% for key, value in request.GET.items %}
+										{% if key != 'category' and key != 'page' %}
+											<input type="hidden" name="{{key}}" value="{{value}}">
+										{% endif %}
+									{% endfor %}
+
+									<button class="btn btn-block btn-primary mt-2" type="submit">Apply</button>
+								</form>
+							</div>
 						</div>
-					</article> <!-- filter-group  .// -->
+					</article>
 
+					<!-- Price Category -->
 					<article class="filter-group">
 						<header class="card-header">
 							<a href="#" data-toggle="collapse" data-target="#collapse_3" aria-expanded="true" class="">
@@ -54,25 +68,43 @@
 							</a>
 						</header>
 						<div class="filter-content collapse show" id="collapse_3">
-							<form action="{% url 'store' %}" method="GET">
+							<form action="" method="GET">
 								<div class="card-body">
 									<div class="form-row">
 										<div class="form-group col-md-6">
 											<label>Min</label>
-											<input type="number" name="low-price" value="{{low_price}}" min="0" class="mr-2 form-control" placeholder="Rs. 0">
+											<input type="number" name="low-price" value="{{low_price}}" min="0"
+												class="mr-2 form-control" placeholder="Rs. 0" required>
 										</div>
 										<div class="form-group text-right col-md-6">
 											<label>Max</label>
-											<input type="number" name="high-price" value="{{high_price}}" min="0" class="mr-2 form-control" placeholder="Rs. 000">
+											<input type="number" name="high-price" value="{{high_price}}" min="0"
+												class="mr-2 form-control" placeholder="Rs. 000" required>
 										</div>
-									</div> <!-- form-row.// -->
+									</div>
+
+									<!-- Preserve other filters -->
+									{% for key, value in request.GET.items %}
+										{% if key != 'low-price' and key != 'high-price' and key != 'page' %}
+											<input type="hidden" name="{{key}}" value="{{value}}">
+										{% endif %}
+										<!-- Preserve selected categories -->
+										{% if key == 'category' %}
+											{% for cat in selected_categories %}
+												<input type="hidden" name="category" value="{{ cat }}">
+											{% endfor %}
+										{% endif %}
+									{% endfor %}
+
 									<button class="btn btn-block btn-primary" type="submit">Apply</button>
-								</div><!-- card-body.// -->
+								</div>
 							</form>
 						</div>
-					</article> <!-- filter-group .// -->
+					</article>
 
 				</div> <!-- card.// -->
+
+				<a href="{% url 'store' %}" id="reset-filter" class="btn btn-primary d-block mt-4">Reset Filters</a>
 
 			</aside> <!-- col.// -->
 			<main class="col-md-9">
@@ -85,22 +117,22 @@
 
 				<div class="row">
 					{% for product in products %}
-						<div class="col-md-4">
-							<figure class="card card-product-grid">
-								<div class="img-wrap">
-									<a href="{{product.get_url}}"><img src="{{product.image.url}}"></a>
-								</div> <!-- img-wrap.// -->
-								<figcaption class="info-wrap">
-									<div class="fix-height">
-										<a href="{{product.get_url}}" class="title">{{product.product_name}}</a>
-										<div class="price-wrap mt-2">
-											<span class="price">Rs. {{product.price}}</span>
-										</div> <!-- price-wrap.// -->
-									</div>
-									<a href="{{product.get_url}}" class="btn btn-block btn-primary">View Details</a>
-								</figcaption>
-							</figure>
-						</div> <!-- col.// -->
+					<div class="col-md-4">
+						<figure class="card card-product-grid">
+							<div class="img-wrap">
+								<a href="{{product.get_url}}"><img src="{{product.image.url}}"></a>
+							</div> <!-- img-wrap.// -->
+							<figcaption class="info-wrap">
+								<div class="fix-height">
+									<a href="{{product.get_url}}" class="title">{{product.product_name}}</a>
+									<div class="price-wrap mt-2">
+										<span class="price">Rs. {{product.price}}</span>
+									</div> <!-- price-wrap.// -->
+								</div>
+								<a href="{{product.get_url}}" class="btn btn-block btn-primary">View Details</a>
+							</figcaption>
+						</figure>
+					</div> <!-- col.// -->
 					{% endfor %}
 				</div> <!-- row end.// -->
 
@@ -108,13 +140,18 @@
 				{% if products.has_previous or products.has_next %}
 				<nav class="mt-4" aria-label="Page navigation sample">
 					<ul class="pagination">
-						<li class="page-item {% if not products.has_previous %}disabled{% endif %}"><a class="page-link" href="{% if products.has_previous %}?page={{products.previous_page_number}}{% endif %}">Previous</a></li>
+						<li class="page-item {% if not products.has_previous %}disabled{% endif %}"><a class="page-link"
+								href="{% if products.has_previous %}?page={{products.previous_page_number}}{% endif %}">Previous</a>
+						</li>
 
 						{% for num in products.paginator.page_range %}
-							<li class="page-item {% if products.number == num %}active{% endif %}"><a class="page-link" href="?page={{num}}">{{num}}</a></li>
+						<li class="page-item {% if products.number == num %}active{% endif %}"><a class="page-link"
+								href="?page={{num}}">{{num}}</a></li>
 						{% endfor %}
 
-						<li class="page-item {% if not products.has_next %}disabled{% endif %}"><a class="page-link" href="{% if products.has_next %}?page={{products.next_page_number}}{% endif %}">Next</a></li>
+						<li class="page-item {% if not products.has_next %}disabled{% endif %}"><a class="page-link"
+								href="{% if products.has_next %}?page={{products.next_page_number}}{% endif %}">Next</a>
+						</li>
 					</ul>
 				</nav>
 				{% endif %}
@@ -125,6 +162,12 @@
 
 	</div> <!-- container .//  -->
 </section>
-<!-- ========================= SECTION CONTENT END// ========================= -->
 
 {% endblock content %}
+
+<!-- <ul class="list-menu">
+	<li {% if '/store/' == request.path %} class="list-group-item" {% endif %}><a href="{% url 'store' %}">All Products</a></li>
+	{% for category in category_links %}
+		<li {% if category.slug in request.path %} class="list-group-item" {% endif %}><a id="category-link" href="{% url 'products_by_category' category.slug %}">{{category}}</a></li>
+	{% endfor %}
+</ul> -->

@@ -2,18 +2,27 @@ from django.shortcuts import render, redirect
 from store.models import Product, Variation
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib import messages
 
 # Create your views here.
-def store(request, category=None):
+def store(request, single_category=None):
     low_price = request.GET.get('low-price')
     high_price = request.GET.get('high-price')
+    categories = request.GET.getlist('category')
+    
+    products = Product.objects.filter(is_available=True).order_by('created_at')
 
     if low_price and high_price:
-        products = Product.objects.filter(price__range=(low_price, high_price))
-    if category:
-        products = Product.objects.filter(category__slug=category)
+        if low_price > high_price:
+            # messages.error(request, f'{low_price} is greater than {high_price}')
+            # return redirect('store')
+            pass
+        products = products.filter(price__range=(low_price, high_price))
+    if single_category:
+        products = products.filter(category__slug=single_category)
+    if categories:
+        products = products.filter(category__slug__in=categories).distinct()
 
-    products = Product.objects.filter(is_available=True).order_by('created_at')
     paginator = Paginator(products, 6) # show 6 produts per page
     page_number = request.GET.get('page')
     try:
@@ -30,7 +39,8 @@ def store(request, category=None):
         "products": page_obj,
         "product_count": product_count,
         'low_price': low_price,
-        'high_price': high_price
+        'high_price': high_price,
+        'selected_categories': request.GET.getlist('category')
     }
 
     return render(request, "store/store.html", context)
@@ -65,6 +75,7 @@ def search(request):
         'products': products,
         'product_count': product_count,
         'keyword': keyword,
+        'all': request.GET.items(),
     }
     return render(request, "store/store.html", context)
  

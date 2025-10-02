@@ -31,19 +31,6 @@
                         <h1>EShop</h1>
                     </a> <!-- brand-wrap.// -->
                 </div>
-                <div class="col-6 col-lg col-md col-sm flex-grow-0">
-                    <div class="d-inline-block dropdown float-right category-wrap">
-                        <button type="button" id="main-category-text" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                            All Products
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{% url 'store' %}">All Products</a>
-                            {% for category in category_links %}
-                                <a class="dropdown-item" id="category-link" href="{% url 'products_by_category' category.slug %}">{{category}}</a>
-                            {% endfor %}
-                        </div>
-                    </div> <!-- category-wrap.// -->
-                </div> <!-- col.// -->
                 <a href="{% url 'store' %}" class="btn btn-outline-primary">Store</a>
                 <div class="col col-lg col-md-6 col-sm-12">
                     <form action="{% url 'search' %}" method="get" class="search">

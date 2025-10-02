@@ -27,9 +27,13 @@
 						<tr>
 							<td>
 								<figure class="itemside align-items-center">
-									<div class="aside"><img src="{{cart_item.product.image.url}}" class="img-sm"></div>
+									<div class="aside">
+										<a href="{{cart_item.product.get_url}}">
+											<img src="{{cart_item.product.image.url}}" class="img-sm">
+										</a>
+									</div>
 									<figcaption class="info">
-										<a href="#" class="title text-dark">{{cart_item.product.product_name}}</a>
+										<a href="{{cart_item.product.get_url}}" class="title text-dark">{{cart_item.product.product_name}}</a>
 										{% for variation in cart_item.variations.all %}
 											<p class="text-muted small">{{variation.variation_category}}: {{variation.variation_value}} <br> </p>
 										{% endfor %}
@@ -42,14 +46,14 @@
 									<div class="input-group input-spinner">
 										<div class="input-group-prepend">
 											<a 
-											class="btn btn-light minus-cart 
-											{% if cart_item.quantity == 1 %}disabled{%else%}enabled{% endif %}" data-product_id="{{cart_item.product.id}}" data-cart_id="{{cart_item.id}}"> 
+											class="btn btn-light minus-cart
+											{% if cart_item.quantity == 1 %}disabled{%else%}enabled{% endif %}" data-product_id="{{cart_item.product.id}}" style="cursor: pointer;" data-cart_id="{{cart_item.id}}"> 
 												<i class="fa fa-minus"></i> 
 											</a>
 										</div>
 										<span class="quantity w-25 d-flex justify-content-center align-items-center">{{cart_item.quantity}}</span>
 										<div class="input-group-append">
-											<a class="btn btn-light plus-cart" disabled data-product_id="{{cart_item.product.id}}" data-cart_id="{{cart_item.id}}"> 
+											<a class="btn btn-light plus-cart" style="cursor: pointer;" disabled data-product_id="{{cart_item.product.id}}" data-cart_id="{{cart_item.id}}"> 
 												<i class="fa fa-plus"></i> </a>
 										</div>
 									</div> <!-- input-group.// -->
@@ -62,7 +66,7 @@
 								</div> <!-- price-wrap .// -->
 							</td>
 							<td class="text-right">
-								<a class="remove-item btn btn-danger" data-product_id="{{cart_item.product.id}}" data-cart_id="{{cart_item.id}}"> Remove</a>
+								<a class="remove-item btn btn-danger" style="cursor: pointer;" role="button" data-product_id="{{cart_item.product.id}}" data-cart_id="{{cart_item.id}}">Remove</a>
 							</td>
 						</tr>
 					{% endfor %}

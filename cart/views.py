@@ -21,43 +21,41 @@ def add_to_cart(request):
         size_variation = request.POST.get("size")
         product = Product.objects.get(id=product_id)
 
-        # before adding a product in cart, to check that product already exist in cart or not
-        already_in_cart = Cart.objects.filter(
-            product=product_id, user=request.user
-        ).exists()
+        # get selected variations
+        selected_variations = []
+        if color_variation:
+            selected_variations.append(color_variation)
+        if size_variation:
+            selected_variations.append(size_variation)
+        
+        # Check if product already exists in cart for this user
+        existing_cart_items = Cart.objects.filter(product=product_id, user=request.user)
+        item_updated = False
 
-        if already_in_cart:
-            cart_item = Cart.objects.get(product=product_id, user=request.user)
-            # if the item exist in cart then get all the variations of that product
-            cart_item_with_variations = cart_item.variations.all()
-            # create a list of variations value
-            existing_variations_in_cart = [
-                item.variation_value for item in cart_item_with_variations
-            ]
-            # if the item exist in cart with same variations then increase the quantity of that product
-            if (
-                color_variation in existing_variations_in_cart
-                and size_variation in existing_variations_in_cart
-            ):
+        for cart_item in existing_cart_items:
+            # Get all variations of this cart item
+            cart_item_variations = cart_item.variations.all()
+            existing_variations_in_cart = [item.variation_value for item in cart_item_variations]
+
+            # If no variations were selected and cart item has no variations, they match
+            if len(selected_variations) == 0 and len(existing_variations_in_cart) == 0:
                 cart_item.quantity += 1
                 cart_item.save()
-            # if the item exist in cart but user set different variations then add the product to cart
-            else:
-                cart_item = Cart.objects.create(
-                    user=request.user, product=product, quantity=1
-                )
-                variations = Variation.objects.filter(
-                    variation_value__in=[color_variation, size_variation]
-                )
+                item_updated = True
+                break
+            # If variations were selected and they match exactly
+            elif len(selected_variations) == len(existing_variations_in_cart) and set(selected_variations) == set(existing_variations_in_cart):
+                cart_item.quantity += 1
+                cart_item.save()
+                item_updated = True
+                break
+
+        # If no matching cart item was found, create a new one
+        if not item_updated:
+            cart_item = Cart.objects.create(user=request.user, product=product, quantity=1)
+            if selected_variations:
+                variations = Variation.objects.filter(variation_value__in=selected_variations)
                 cart_item.variations.set(variations)
-        else:
-            cart_item = Cart.objects.create(
-                user=request.user, product=product, quantity=1
-            )
-            variations = Variation.objects.filter(
-                variation_value__in=[color_variation, size_variation]
-            )
-            cart_item.variations.set(variations)
 
         return redirect("show_cart")
 
@@ -151,15 +149,69 @@ def remove_cart_item(request):
             "grand_total": total_amount + shipping_amount,
         }
         return JsonResponse(response)
-    
+
+
 def checkout(request):
     cart_items = Cart.objects.filter(user=request.user)
 
     if len(cart_items) <= 0:
-        return redirect('store')
+        return redirect("store")
 
     context = {
         "cart_items": cart_items,
     }
 
     return render(request, "store/checkout.html", context)
+
+
+
+'''
+if request.method == "POST":
+        product_id = request.POST["product_id"]
+        color_variation = request.POST.get("color")
+        size_variation = request.POST.get("size")
+        product = Product.objects.get(id=product_id)
+
+        # before adding a product in cart, to check that product already exist in cart or not
+        already_in_cart = Cart.objects.filter(
+            product=product_id, user=request.user
+        ).exists()
+
+        if already_in_cart:
+            cart_item = Cart.objects.get(product=product_id, user=request.user)
+            # if the item exist in cart then get all the variations of that product
+            cart_item_with_variations = cart_item.variations.all()
+            # create a list of variations value
+            existing_variations_in_cart = [
+                item.variation_value for item in cart_item_with_variations
+            ]
+            # if the item exist in cart with same variations then increase the quantity of that product
+            if (
+                color_variation in existing_variations_in_cart
+                and size_variation in existing_variations_in_cart
+            ):
+                cart_item.quantity += 1
+                cart_item.save()
+            # if the item exist in cart but user set different variations then add the product to cart
+            elif (
+                color_variation not in existing_variations_in_cart
+                or size_variation not in existing_variations_in_cart
+            ):
+                cart_item = Cart.objects.create(
+                    user=request.user, product=product, quantity=1
+                )
+                variations = Variation.objects.filter(
+                    variation_value__in=[color_variation, size_variation]
+                )
+                cart_item.variations.set(variations)
+        else:
+            cart_item = Cart.objects.create(
+                user=request.user, product=product, quantity=1
+            )
+            variations = Variation.objects.filter(
+                variation_value__in=[color_variation, size_variation]
+            )
+            cart_item.variations.set(variations)
+
+        return redirect("show_cart")
+'''
