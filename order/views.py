@@ -40,7 +40,7 @@ def payment(request):
     cart_items.delete()
 
     # send order recieved email to customer 
-    order = Order.objects.get(user=current_user, is_ordered=True)
+    order = Order.objects.get(user=current_user, order_number=body['orderNumber'], is_ordered=True)
     send_order_received_email(order.email, order.order_number)
 
     # send order number and transaction id back to sendData method from where request is coming

@@ -184,6 +184,7 @@
                     })
                     .then(response => response.json())
                     .then(data => {
+                        console.log('data after pay: ', data)
                         window.location.href = `${redirect_url}?order_number=${data.order_number}&payment_id=${data.transaction_id}`
                     })
                 }

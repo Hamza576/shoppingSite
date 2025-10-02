@@ -149,7 +149,6 @@ def dashboard_view(request):
 def my_orders(request):
     orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
     order_count = orders.count()
-    print("order count: ", order_count)
 
     context = {
         'orders': orders,
